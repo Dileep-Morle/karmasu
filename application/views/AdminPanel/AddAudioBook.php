@@ -223,7 +223,7 @@
 											<?php echo form_error("abooksample","<p class='text-danger' >","</p>"); ?>
 											</div>
 										</div>-->
-                                        <div class="form-group row d-none">
+                                        <div class="form-group row">
                                             <label  class="col-sm-2 col-form-label">Audio-Book Audio File<span class="text-danger">*</span></label>
                                             <div class="col-sm-10">
                                                 <input type="file" class="form-control" name="abook" title="Audio-Book File"  accept="audio/mp3">

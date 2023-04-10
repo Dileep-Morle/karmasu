@@ -414,7 +414,7 @@
              return status;
          }
          function getParameterData(parameter){
-             // alert(parameter);
+             alert(parameter);
              if(parameter=='External'){
                  $(".parameter-data").html('<label class="col-form-label">External Link <span class="text-danger">*</span></label><input type="text" class="form-control" name="data" placeholder="Enter Link " required >');
                  $('.parameter-data').show();

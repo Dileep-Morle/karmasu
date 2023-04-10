@@ -24,7 +24,7 @@
                     
                 }
                 } else {
-                redirect(base_url("Home/"));
+               redirect(base_url("Home/"));
             }
             $this->notificationCount=$this->db->get('tbl_notification')->num_rows();
             $this->enrollCount=$this->db->get('tbl_enroll')->num_rows();
@@ -407,12 +407,11 @@
         
         public function Delete()
         {
-            // print_r('dilip');die;
             if ($this->input->post()) {
                 $data = $this->input->post();
                 $unlink_folder = $data['unlink_folder'];
                 $unlink_column = $data['unlink_column'];
-                // $this->load->database();
+                
                 $result = $this->db->where($data['where_column'],$data['where_value'])
                 ->get($data['table']);
                 $resdata = $result->result_array();
@@ -1074,7 +1073,7 @@
         
         # E-Book Management
         
-        public function ManageEBooks()
+         public function ManageEBooks()
         {
             $table='tbl_ebook';
             $categoryresult = $this->db->order_by("id", "ASC")->get('tbl_category');
@@ -1390,8 +1389,8 @@
                                     if ($this->form_validation->run() == FALSE)
                                     {
                                         $msg=explode('</p>',validation_errors());
-                                $msg=str_ireplace('<p>','', $msg[0]);
-                                $this->session->set_flashdata(array('res'=>'error','msg'=>$msg));
+                                        $msg=str_ireplace('<p>','', $msg[0]);
+                                        $this->session->set_flashdata(array('res'=>'error','msg'=>$msg));
                                         redirect(base_url('AdminPanel/ManageEBooks/Edit/'.$id));
                                     }
                                     else{
@@ -1567,10 +1566,10 @@
             else 
             {
                 if(!empty($_REQUEST['author'])){
-                    $query = $this->db->where('author',$_REQUEST['author'])->order_by("id", "DESC")->get($table);
+                    $query = $this->db->where('author',$_REQUEST['author'])->order_by("apprstatus", "DESC")->get($table);
                 }
                 else{
-                    $query = $this->db->order_by("id", "DESC")->order_by("apprstatus", "DESC")->get($table);
+                    $query = $this->db->order_by("apprstatus", "DESC")->get($table);
                 }
                 $data["list"] = $query->result();
                 $this->load->view("AdminPanel/ManageEBooks", $data);
@@ -2428,11 +2427,11 @@
                             $this->form_validation->set_rules('title', 'Category Title', 'required', array('required' => '%s is Required Field'));
                             $this->form_validation->set_rules('description', 'Category Description', 'required', array('required' => '%s is Required Field'));
                             // $this->form_validation->set_rules('color', 'Color Code', 'required', array('required' => '%s is Required Field'));
-                            if (empty($_FILES["image"]["name"])) {
-                                $this->form_validation->set_rules('image', 'Category image', 'required');
+                            if (empty($_FILES["icon"]["name"])) {
+                                $this->form_validation->set_rules('icon', 'Category image', 'required');
                             }
                             else{
-                                $ext      = pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION);
+                                $ext      = pathinfo($_FILES["icon"]["name"], PATHINFO_EXTENSION);
                                 $filename = time().rand(). "." . $ext;
                             }
                             if ($this->form_validation->run() == FALSE){
@@ -2442,14 +2441,13 @@
                                 $data_to_insert= array(
                                 "title" => $this->input->post("title"),
                                 "description" => $this->input->post("description"),
-                                "image" =>$filename,
+                                "icon" =>$filename,
                                 // "color" => $this->input->post("color"),
                                 "status" => "true",
                                 "date" => $this->date,
                                 "time" => $this->time
                                 );
                                 $data_to_insert = $this->security->xss_clean($data_to_insert);
-                                
                                 if ($this->db->insert($table, $data_to_insert)) {
                                     $upload_errors           = array();
                                     $config['upload_path']   = './uploads/category/';
@@ -2457,7 +2455,7 @@
                                     $config['max_size']      = 10000000;
                                     $config['file_name']     = $filename;
                                     $this->load->library('upload', $config);
-                                    if (!$this->upload->do_upload('image')) {
+                                    if (!$this->upload->do_upload('icon')) {
                                         array_push($upload_errors, array(
                                         'error_upload_logo' => $this->upload->display_errors()
                                         ));
@@ -2499,14 +2497,14 @@
                                     {
                                         $old_filename=$data['list'][0]->image;
                                         $filename=$old_filename;
-                                        if (!empty($_FILES["image"]["name"])) {
-                                            $ext      = pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION);
+                                        if (!empty($_FILES["icon"]["name"])) {
+                                            $ext      = pathinfo($_FILES["icon"]["name"], PATHINFO_EXTENSION);
                                             $filename = time().rand(). "." . $ext;
                                         }  
                                         $data_to_update= array(
                                         "title" => $this->input->post("title"),
                                         "description" => $this->input->post("description"),
-                                        "image" =>$filename,
+                                        "icon" =>$filename,
                                         // "color" => $this->input->post("color")
                                         );
                                         $data_to_update = $this->security->xss_clean($data_to_update);
@@ -2516,14 +2514,14 @@
                                         if($result) 
                                         {
                                             $this->session->set_flashdata(array('res'=>'success','msg'=>'Category Updated Successfully.')); 
-                                            if (!empty($_FILES["image"]["name"])) {
+                                            if (!empty($_FILES["icon"]["name"])) {
                                                 $upload_errors           = array();
                                                 $config['upload_path']   = './uploads/category/';
                                                 $config['allowed_types'] = 'gif|jpg|png|jpeg';
                                                 $config['max_size']      = 10000000;
                                                 $config['file_name']     = $filename;
                                                 $this->load->library('upload', $config);
-                                                if (!$this->upload->do_upload('image')) {
+                                                if (!$this->upload->do_upload('icon')) {
                                                     array_push($upload_errors, array(
                                                     'error_upload_logo' => $this->upload->display_errors()
                                                     ));
@@ -2624,7 +2622,7 @@
                                         $this->session->set_flashdata(array('res'=>'upload_error','msg'=>'Data saved but error in file upload.'));
                                     }
                                     else{
-                                        $this->session->set_flashdata(array('res'=>'success','msg'=>'Shop Category Added Successfully.'));
+                                        $this->session->set_flashdata(array('res'=>'success','msg'=>'Spirituality image Added Successfully.'));
                                     }
                                 }
                                 else 
@@ -2667,7 +2665,7 @@
                                    
                                    if($result) 
                                    {
-                                       $this->session->set_flashdata(array('res'=>'success','msg'=>'Shop Category  Updated Successfully.')); 
+                                       $this->session->set_flashdata(array('res'=>'success','msg'=>'Spirituality Image Updated Successfully.')); 
                                        if (!empty($_FILES["image"]["name"])) {
                                            $upload_errors           = array();
                                            $config['upload_path']   = './uploads/shopcategory/';
@@ -2703,9 +2701,9 @@
              }
          }
         
-         public function ManageSpirituality()
+           public function ManageSpirituality()
          {
-             $table='tbl_spiritualities';
+             $table='tbl_spirituality';
              if ($this->uri->segment(3) == TRUE) 
              {
                  $action = $this->uri->segment(3);
@@ -2736,7 +2734,7 @@
                      {
                          if (isset($_POST["addaction"])==true) 
                          {    
-                             //  $this->form_validation->set_rules('image', 'Spirituality Image', 'required', array('required' => '%s is Required Field'));
+                              $this->form_validation->set_rules('link', 'Spirituality Link', 'required', array('required' => '%s is Required Field'));
                              //  $this->form_validation->set_rules('description', 'Category Description', 'required', array('required' => '%s is Required Field'));
                              // $this->form_validation->set_rules('color', 'Color Code', 'required', array('required' => '%s is Required Field'));
                              if (empty($_FILES["image"]["name"])) {
@@ -2804,6 +2802,7 @@
                                     }  
                                     $data_to_update= array(
                                         "image" =>$filename,
+                                        "link" => $this->input->post("link"),
                                     );
                                     $data_to_update = $this->security->xss_clean($data_to_update);
                                     $result=$this->db->where('id', $row->id)
@@ -4033,9 +4032,9 @@
                                     #Send Notification 
                                     
                                     $id=$this->input->post("data");
-                                    $type=$this->input->post("title");
+                                    $type=$this->input->post("parameter");
                                     if($type=='Quiz'){
-                                        $results=$this->db->where('quize_id',$id)->get('tbl_quiz_scheduled');
+                                        $results=$this->db->where('quiz_id',$id)->get('tbl_quiz_scheduled');
                                         if($results->num_rows()){
                                             $results=$results->row();
                                             $id=$results->id;
@@ -4044,10 +4043,24 @@
                                             $type='None';
                                             $id='';
                                         }
+                                    }elseif($type=='Course'){
+                                      $results=$this->db->where('course_id',$id)->get('tbl_quiz_scheduled');
+                                        if($results->num_rows()){
+                                            $results=$results->row();
+                                            $id=$results->id;
+                                        }
+                                        else{
+                                            $type='None';
+                                            $id='';
+                                        }
+                                    
+                                    }else{
+                                       echo "notification not send";
                                     }
                                     $click_action=$this->firebaseActivities[$type];
                                     if($this->input->post("for_user")=='Student')
                                     {
+                                      
                                         $uresult=$this->db->where_in('userid',$users)->get('tbl_apptoken');
                                         if($uresult->num_rows())
                                         {
@@ -4065,10 +4078,10 @@
                                                 $start=0;
                                                 while($start<count($alltoken))
                                                 {
-                                                    $sendtoken=array_slice($alltoken,$start,$start+199);
+                                                    $sendtoken=array_slice($alltoken,$start,$start+999);
                                                     
                                                     $return=$this->codersadda->send_notification_multiple($message,$title,$sendtoken,$image_url,$click_action,$id,$type);
-                                                    $start=$start+199;
+                                                    $start=$start+999;
                                                 }
                                                 $user_id=implode(',',$alluser);
                                             }
@@ -4925,18 +4938,48 @@
                             $this->form_validation->set_rules('duration', 'Duration', 'required', array('required' => '%s is Required Field'));
                             $this->form_validation->set_rules('description', 'Description', 'required', array('required' => '%s is Required Field'));
                             $this->form_validation->set_rules('certificationcheck', 'Certification', 'required');
-                            if (empty($_FILES["thumbnail"]["name"])) {
-                                $this->form_validation->set_rules('thumbnail', 'Thumbnail', 'required');
-                            }
-                            else{
-                                $ext      = pathinfo($_FILES["thumbnail"]["name"], PATHINFO_EXTENSION);
-                                $filename = time().rand(). "." . $ext;
-                            }
-                            
+                           
                             if ($this->form_validation->run() == FALSE){
                             } 
                             else 
                             {
+                               if (empty($_FILES["thumbnail"]["name"])) {
+                                $this->form_validation->set_rules('thumbnail', 'Thumbnail', 'required');
+                                }
+                                else{
+                                    if (empty($_FILES["thumbnail"]["name"])) {
+                                        $image='';
+                                        $image_url=base_url('uploads/logo.png');
+                                    }
+                                    else{
+                                        $ext      = pathinfo($_FILES["thumbnail"]["name"], PATHINFO_EXTENSION);
+                                        $image = time().rand(). "." . $ext;
+                                        $image_url=base_url('uploads/live_video/'.$image);
+                                    }
+                                }
+                                var_dump($_POST);
+                                if($this->input->post("for_user")=='AllEducator'){
+                                    $_POST['for_user']='Educator';
+                                    $usersData=$this->db->where('status','true')->get('tbl_tutor')->result();
+                                    $users=array();
+                                    foreach($usersData as $user){
+                                        array_push($users,$user->id);
+                                    }
+                                }
+                                elseif($this->input->post("for_user")=='AllStudent'){
+                                    $_POST['for_user']='Student';
+                                    $usersData=$this->db->where('status','true')->get('tbl_registration')->result();
+                                   
+                                    $users=array();
+                                   
+                                    foreach($usersData as $user){
+                                        array_push($users,$user->id);
+                                    }
+                                }
+                                else{
+                                 
+                                    $users=$this->input->post("users");
+                                }
                                 if($this->input->post("certificationcheck")=='No'){
                                     $certificate='';
                                     $certificate_charge='';
@@ -4948,7 +4991,7 @@
                                     $km_charge=$this->input->post("km_charge");
                                 }
                                 $data_to_insert= array(
-                                "thumbnail" => $filename,
+                                "thumbnail" => $image,
                                 "subject" =>strtoupper($this->input->post("subject")),
                                 "tags" =>strtoupper($this->input->post("tags")),
                                 "title" => $this->input->post("title"),
@@ -4956,7 +4999,9 @@
                                 "link" => $this->input->post("link"),
                                 "timing" => $this->input->post("timing"),
                                 "duration" => $this->input->post("duration"),
-                                "userid" => $this->input->post("userid"),
+                                "parameter" =>$this->input->post("parameter"),
+                                "for_user" => $this->input->post("for_user"),
+                                "users" =>implode(',',$users),
                                 "password" => $this->input->post("password"),
                                 "certification" => $this->input->post("certificationcheck"),
 								"certificate" => $certificate,
@@ -4967,23 +5012,81 @@
                                 "date" => $this->date,
                                 "time" => $this->time
                                 );
+                                
                                 $data_to_insert = $this->security->xss_clean($data_to_insert);
+                               
+                                $message=$this->input->post("description");
+                                $title=$this->input->post("title");
+                               
                                 if ($this->db->insert($table, $data_to_insert)) {
                                     $upload_errors           = array();
                                     $config['upload_path']   = './uploads/live_video/';
                                     $config['allowed_types'] = 'gif|jpg|png|jpeg';
                                     $config['max_size']      = 10000000;
-                                    $config['file_name']     = $filename;
+                                    $config['file_name']     = $image;
                                     $this->load->library('upload', $config);
-                                    if (!$this->upload->do_upload('thumbnail')) {
-                                        array_push($upload_errors, array(
-                                        'error_upload_logo' => $this->upload->display_errors()
-                                        ));
-                                        $this->session->set_flashdata(array('res'=>'upload_error','msg'=>'Data saved but error in file upload.'));
+                                    $this->upload->do_upload('thumbnail');
+                                  }
+                                       #Send Notification 
+                                    
+                                    $id=$this->input->post("id");
+                                    $type=$this->input->post("parameter");
+                                    if($type=='LiveSession'){
+                                        $results=$this->db->where('liveid',$id)->get('tbl_live_join');
+                                        if($results->num_rows()>0){
+                                            $result=$results->row();
+                                           
+                                            $id=$result->id;
+                                        }
+                                        else{
+                                            $type='None';
+                                            $id='';
+                                        }
                                     }
-                                    else{
-                                        $this->session->set_flashdata(array('res'=>'success','msg'=>'Live Session Added Successfully.'));
-                                    }
+                                    $click_action=$this->firebaseActivities[$type];
+                                    
+                                    if($this->input->post("for_user")=='Student')
+                                    {
+                                      $uresult=$this->db->where_in('userid',$users)->get('tbl_apptoken');
+                                        if($uresult->num_rows())
+                                        {
+                                            if($uresult->num_rows()>1)
+                                            {
+                                                $alltoken=array();
+                                                $alluser=array();
+                                                
+                                                foreach($uresult->result() as $item)
+                                                {
+                                                    $alltoken[]=$item->token;
+                                                    $alluser[]=$item->userid;
+                                                }
+                                                
+                                                $start=0;
+                                                while($start<count($alltoken))
+                                                {
+                                                    $sendtoken=array_slice($alltoken,$start,$start+999);
+                                                    
+                                                    $return=$this->codersadda->send_notification_multiple($message,$title,$sendtoken,$image_url,$click_action,$id,$type);
+                                                    $start=$start+999;
+                                                }
+                                                $user_id=implode(',',$alluser);
+                                            }
+                                            else
+                                            { 
+                                                 $uvalues=$uresult->row();
+                                                $return=$this->codersadda->send_notification_single($message,$title,$uvalues->token,$image_url,$click_action,$id,$type);
+                                                 $user_id=implode(',',$users);
+                                            }
+                                           
+                                            
+                                        }
+                                     
+                                        
+                                        
+                                        
+                                      
+                                    
+                                  $this->session->set_flashdata(array('res'=>'success','msg'=>'Live Session Started.')); 
                                 }
                                 else 
                                 {
@@ -5139,38 +5242,47 @@
                                                     $type='None';
                                                     $id='';
                                                 }
-                                            }
+                                              }
                                             $click_action=$this->firebaseActivities[$type];
                                             if($this->input->post("for_user")=='Student')
                                             {
-                                                $jquery = $this->db->where('liveid', $this->input->post("id"))->get('tbl_live_join');
-                                                
-                                                foreach($jquery->result() as $user) 
-                                                {
-                                                    $uresult=$this->db->where('userid',$user->userid)->get('tbl_apptoken');
-                                                    if($uresult->num_rows()>1)
+                                              $jquery = $this->db->where('liveid', $this->input->post("id"))->get('tbl_live_join');
+
+                                              foreach($jquery->result() as $user) 
+                                              {
+                                                  $uresult=$this->db->where('userid',$user->userid)->get('tbl_apptoken');
+                                                    if($uresult->num_rows())
                                                     {
-                                                        
+                                                      if($uresult->num_rows()>1)
+                                                      {
+
                                                         $alltoken=array();
                                                         $alluser=array();
-                                                        
+
                                                         foreach($uresult->result() as $item)
                                                         {
                                                             $alltoken[]=$item->token;
                                                             $alluser[]=$item->userid;
                                                         }
-                                                        
+
                                                         $start=0;
                                                         while($start<count($alltoken))
                                                         {
                                                             $sendtoken=array_slice($alltoken,$start,$start+999);
-                                                            
+
                                                             $return=$this->codersadda->send_notification_multiple($this->input->post("notification_message"),$this->input->post("notification_title"),$sendtoken,$image_url,$click_action,$id,$type);
                                                             $start=$start+999;
                                                         }
                                                         $user_id=implode(',',$alluser);
                                                     }
-                                                }
+                                                  else
+                                                  { 
+                                                    $uvalues=$uresult->row();
+                                                    $return=$this->codersadda->send_notification_single($message,$title,$uvalues->token,$image_url,$click_action,$id,$type);
+                                                    $user_id=implode(',',$users);
+                                                  }
+                                              }
+                                            }
                                             }
                                             $this->session->set_flashdata(array('res'=>'success','msg'=>'Live Session Started.')); 
                                         }
@@ -7814,6 +7926,7 @@
                 {
                     if($action=='Add')
                     {
+                     // print_r(isset($_POST["addaction"]));//
                         if (isset($_POST["addaction"])) 
                         {    
                             $this->form_validation->set_rules('title', 'Title', 'required', array('required' => '%s is Required Field'));
@@ -7861,9 +7974,7 @@
                                     $config['allowed_types'] = 'gif|jpg|png|jpeg|mp4';
                                     $config['max_size']      = 10000000000;
                                     $config['file_name']     = $filename;
-                                    
                                     $this->load->library('upload', $config);
-
                                     if (!$this->upload->do_upload('screen')) {
                                         array_push($upload_errors, array(
                                         'error_upload_logo' => $this->upload->display_errors()

@@ -226,9 +226,12 @@
 		{
 			$output['res']="error";
             $output['msg']="error";
-			
+			if(!empty($_POST))
+			{
 				$email=$this->input->post('email');
 				$name=$this->input->post('name');
+              if(empty($_POST['email'] =='')){
+                if(empty($_POST['name'] =='')){
 				if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $wheredata=array('email'=>$email);
 					$result=$this->db->where($wheredata)->get('tbl_registration');
@@ -257,8 +260,24 @@
 					$output['res']='error';
 					$output['msg']=$email.'is not a valid email address';
 				}
-			
-			
+                } 
+				else
+				{
+					$output['res']='error';
+					$output['msg']='Name is reqired';
+				}
+                 } 
+				else
+				{
+					$output['res']='error';
+					$output['msg']='Email address is reqired';
+				}
+			}
+			else
+			{
+				$output['res']='error';
+				$output['msg']="Something went wrong.";	
+			}
 			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 
@@ -288,11 +307,12 @@
           $output['msg']="error";
           
           $data=$this->db->get('tbl_spirituality');
-          if ($data->num_rows() > 0)
+          if ($data->num_rows())
           {
-			$output['spiritualitypath']=base_url()."uploads/spirituality";		
+            $values=$data->row();
+            $image['data']=base_url('uploads/spirituality/').$values->image;
             $output['res']='success';
-            $output['msg']='Spirituality Record is Found';	
+            $output['msg']='Spirituality Record is Found';				
             $output['data']=$this->db->get('tbl_spirituality')->result_array();
           }
           else{
@@ -302,6 +322,55 @@
             echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 		
+      public function AbookByCategory()
+		{
+          $output['res']="error";
+          $output['msg']="error";
+          $output['data']="";
+          $category_id=$this->input->get('category');
+          $result=$this->db->where('category', $category_id)->get('tbl_abook');
+          
+          if ($result->num_rows()>0)
+          {
+            $output['res']="success";
+            $output['msg']="Audio book list is found by category";
+            $output['data']=$result->result_array();
+            if(empty($this->input->post('type'))){
+					    $whereData=['apprstatus'=>'true'];
+            }
+            else{
+              $whereData=['apprstatus'=>'true','type'=>$this->input->post('type')];
+            }
+            $result=$this->db->where('category', $category_id)->get('tbl_abook');
+            $count=$result->num_rows();
+            if($count){
+
+              $output['res']='success';
+              $output['msg']=$count.' Record Found';
+              $i=0;
+              $return=[];
+              foreach($result->result() as $item)
+              {
+                $item->description=strip_tags($item->description);
+                $AverageReview=$this->AverageReview('Abook',$item->id);
+                $return[$i]=$item;
+                $return[$i]->topic_length=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->num_rows();
+                $return[$i]->topicList=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->result();
+                $i++;
+              }
+
+              $output['data']=$return;
+            }
+            else{
+              $output['msg']="No Record Found";
+            }
+          }
+          else{
+            $output['res']='failled';
+            $output['msg']="Audio book record was not Found";
+          }
+            echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
 		
 		#Logout
 		public function Logout()
@@ -833,7 +902,7 @@
 				{
 					
 					$return[$i]=$item;
-					if($item->parameter=='Course' or $item->parameter=='Ebook' or  $item->parameter=='Abook')
+					if($item->parameter=='Course' or $item->parameter=='Ebook')
 					{
 					    $presult=$this->db->where(['itemid'=>$item->link,'itemtype'=>$item->parameter,'userid'=>$this->userid])->get("tbl_enroll");
 					    if($presult->num_rows()){
@@ -844,6 +913,36 @@
 					    }
 					    $return[$i]->purchase=$purchase;
 					}
+                  
+                  if($item->parameter=='Abook')
+					{
+					    $result=$this->db->where(['id'=>$item->link])->get("tbl_abook");
+                        if($result->num_rows() > 0){
+                          $rows=$result->row();
+                          $return[$i]->link= base_url("uploads/abook/$rows->abook");
+					    }					   
+					}
+                  
+                  if($item->parameter=='FreeVideo')
+					{
+					    $presult=$this->db->where(['id'=>$item->link])->get("tbl_recommended_videos");
+                         
+					    if($presult->num_rows() > 0)
+                        {
+					      $row=$presult->row();
+                          $result=$this->db->where(['id'=>$row->video])->get("tbl_video");
+                          if($result->num_rows() > 0){
+                            $video=$result->row();
+                            if(trim($video->type)=='External'){
+                             $return[$i]->link= $video->link;
+                            }else{
+                             $return[$i]->link= base_url("uploads/video/$video->video");
+                            }                        
+                            
+                          } 
+					    }					   
+					}
+
 					
 					
 					
@@ -890,32 +989,32 @@
 		
 		# AverageReview
 		
-		// public function AverageReview($itemtype,$itemid)
-		// {
-		// 	$reviewResult=$this->db->where(['itemtype'=>$itemtype,'itemid'=>$itemid])->get("tbl_review");
-		// 	$reviewValues=$reviewResult->row();
+		public function AverageReview($itemtype,$itemid)
+		{
+			$reviewResult=$this->db->where(['itemtype'=>$itemtype,'itemid'=>$itemid])->get("tbl_review");
+			$reviewValues=$reviewResult->row();
 			
-		// 	$sumOfRating=0;
-		// 	$rating=0;
-		// 	$ratingcount=$reviewResult->num_rows();
-		// 	if($ratingcount)
-		// 	{				
-		// 		foreach($reviewResult->result() as $review)
-		// 		{
-		// 			$sumOfRating+=$review->rating;
-		// 		}
-		// 		$rating=($sumOfRating/$ratingcount);
-		// 	}
+			$sumOfRating=0;
+			$rating=0;
+			$ratingcount=$reviewResult->num_rows();
+			if($ratingcount)
+			{				
+				foreach($reviewResult->result() as $review)
+				{
+					$sumOfRating+=$review->rating;
+				}
+				$rating=($sumOfRating/$ratingcount);
+			}
 			
-		// 	if($rating==0){
-		// 		$rating=rand(3.5,5);
-		// 	}
-		// 	if($ratingcount==0){
-		// 		$ratingcount=rand(1,10);
-		// 	}
-		// 	$rating=ceil($rating);
-		// 	return ['rating'=>$rating,'ratingcount'=>$ratingcount];
-		// }
+			if($rating==0){
+				$rating=rand(3.5,5);
+			}
+			if($ratingcount==0){
+				$ratingcount=rand(1,10);
+			}
+			$rating=ceil($rating);
+			return ['rating'=>$rating,'ratingcount'=>$ratingcount];
+		}
 		
 		# Enrolled Items 
 		
@@ -973,7 +1072,6 @@
             $output['data']="";
 			$EnrolledItemsC=$this->EnrolledItems('Course',$this->userid);
 			$EnrolledItemsE=$this->EnrolledItems('Ebook',$this->userid);
-
 			$result=$this->db->where(['status'=>'true'])->order_by("title", "ASC")->get('tbl_category');
 			$count=$result->num_rows();
 			if($count)
@@ -1122,9 +1220,9 @@
             $output['msg']="error";
             $output['data']="";
 			
-			$EnrolledItems=$this->EnrolledItems('Course',$this->userid);
+			//$EnrolledItems=$this->EnrolledItems('Course',$this->userid);
 			
-			$result=$this->db->where(['apprstatus'=>'true'])->where_not_in('id',$EnrolledItems)->where_not_in('trending',['Trending','trending'])->order_by("trending", "ASC")->get('tbl_course');
+			$result=$this->db->where(['apprstatus'=>'true'])->where_not_in('trending',['Trending','trending'])->order_by("trending", "ASC")->get('tbl_course');
 			$count=$result->num_rows();
 			if($count)
 			{
@@ -2100,8 +2198,58 @@
 			
 		}
 		
-		#Ebook
-		
+		#EbookByCategory
+		public function EbookByCategory()
+		{
+          $output['res']="error";
+          $output['msg']="error";
+          $output['data']="";
+          $category_id=$this->input->get('category');
+          $result=$this->db->where('category', $category_id)->get('tbl_ebook');
+          
+          if ($result->num_rows()>0)
+          {
+            $output['res']="success";
+            $output['msg']="E-book list is found by category";
+            $output['data']=$result->result_array();
+            if(empty($this->input->post('type'))){
+			  $whereData=['apprstatus'=>'true'];
+            }
+            else{
+              $whereData=['apprstatus'=>'true','type'=>$this->input->post('type')];
+            }
+            $result=$this->db->where('category', $category_id)->get('tbl_ebook');
+            $count=$result->num_rows();
+            if($count){
+
+              $output['res']='success';
+              $output['msg']=$count.' Record Found';
+              $i=0;
+              $return=[];
+              foreach($result->result() as $item)
+              {
+                $item->description=strip_tags($item->description);
+                $AverageReview=$this->AverageReview('Ebook',$item->id);
+                $return[$i]=$item;
+                $return[$i]->topic_length=$this->db->where('itemid',$item->id)->where('itemtype','Ebook')->order_by('topic_no','ASC')->get('tbl_topic')->num_rows();
+                $return[$i]->topicList=$this->db->where('itemid',$item->id)->where('itemtype','Ebook')->order_by('topic_no','ASC')->get('tbl_topic')->result();
+                $i++;
+              }
+
+              $output['data']=$return;
+            }
+            else{
+              $output['msg']="No Record Found";
+            }
+          }
+          else{
+            $output['res']='failled';
+            $output['msg']="E-book record was not Found";
+          }
+            echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+      
+        #Ebook
 		public function Ebook()
 		{
 			$table="tbl_ebook";
@@ -2116,7 +2264,6 @@
 				
 				$action=$this->uri->segment(4);
 				if($action=='List'){
-					
 					if($this->uri->segment(5)){
 						
 						$subAction=$this->uri->segment(5);
@@ -2150,6 +2297,7 @@
 					}
 					
 					$result=$this->db->where($whereData)->where_not_in('id',$EnrolledItems)->order_by($orderByColumn,$orderByValue)->get($table);
+					
 					$count=$result->num_rows();
 					if($count){
 						
@@ -2306,11 +2454,30 @@
 			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 			
 		}
-		
+		#abookdata
+      public function AbookAllData()
+		{
+          $output['res']="error";
+          $output['msg']="error";
+          
+          $data=$this->db->get('tbl_abook');
+          if ($data->num_rows() > 0)
+          {
+            $output['res']='success';
+            $output['msg']='Audio book Record is Found';	
+            $output['data']=$this->db->get('tbl_abook')->result_array();
+          }
+          else{
+            $output['res']='failled';
+            $output['msg']="Audio record was not Found";
+          }
+            echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
 		#Audio book
 		
 		public function Abook()
 		{
+          
 			$table="tbl_abook";
 			
 			$output['res']="error";
@@ -2318,7 +2485,6 @@
 			$output['data']="";
 			
 			$EnrolledItems=$this->EnrolledItems('Abook',$this->userid);
-			
 			if($this->uri->segment(4)){
 				
 				$action=$this->uri->segment(4);
@@ -2517,106 +2683,6 @@
 			
 		}
 		
-
-		public function EbookByCategory()
-		{
-          $output['res']="error";
-          $output['msg']="error";
-          $output['data']="";
-          $category_id=$this->input->get('category');
-          $result=$this->db->where('category', $category_id)->get('tbl_ebook');
-          
-          if ($result->num_rows()>0)
-          {
-            $output['res']="success";
-            $output['msg']="E-book list is found by category";
-            $output['data']=$result->result_array();
-            if(empty($this->input->post('type'))){
-					    $whereData=['apprstatus'=>'true'];
-            }
-            else{
-              $whereData=['apprstatus'=>'true','type'=>$this->input->post('type')];
-            }
-            $result=$this->db->where('category', $category_id)->get('tbl_abook');
-			$count=$result->num_rows();
-			if($count){
-				
-				$output['res']='success';
-				$output['msg']=$count.' Record Found';
-				$i=0;
-				$return=[];
-				foreach($result->result() as $item)
-				{
-					$item->description=strip_tags($item->description);
-					$AverageReview=$this->AverageReview('Abook',$item->id);
-					$return[$i]=$item;
-					$return[$i]->topic_length=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->num_rows();
-					$return[$i]->topicList=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->result();
-					$i++;
-				}
-				
-				$output['data']=$return;
-			}
-			else{
-				$output['msg']="No Record Found";
-			}
-          }
-          else{
-            $output['res']='failled';
-            $output['msg']="E-book record was not Found";
-          }
-            echo json_encode([$output], JSON_UNESCAPED_UNICODE);
-		}
-
-		public function AbookByCategory()
-		{
-          $output['res']="error";
-          $output['msg']="error";
-          $output['data']="";
-          $category_id=$this->input->get('category');
-          $result=$this->db->where('category', $category_id)->get('tbl_abook');
-          
-          if ($result->num_rows()>0)
-          {
-            $output['res']="success";
-            $output['msg']="Audio book list is found by category";
-            $output['data']=$result->result_array();
-            if(empty($this->input->post('type'))){
-					    $whereData=['apprstatus'=>'true'];
-            }
-            else{
-              $whereData=['apprstatus'=>'true','type'=>$this->input->post('type')];
-            }
-            $result=$this->db->where('category', $category_id)->get('tbl_abook');
-					$count=$result->num_rows();
-					if($count){
-						
-						$output['res']='success';
-						$output['msg']=$count.' Record Found';
-						$i=0;
-						$return=[];
-						foreach($result->result() as $item)
-						{
-						    $item->description=strip_tags($item->description);
-							$AverageReview=$this->AverageReview('Abook',$item->id);
-							$return[$i]=$item;
-							$return[$i]->topic_length=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->num_rows();
-							$return[$i]->topicList=$this->db->where('itemid',$item->id)->where('itemtype','Abook')->order_by('topic_no','ASC')->get('tbl_topic')->result();
-							$i++;
-						}
-						
-						$output['data']=$return;
-					}
-					else{
-						$output['msg']="No Record Found";
-					}
-          }
-          else{
-            $output['res']='failled';
-            $output['msg']="Audio book record was not Found";
-          }
-            echo json_encode([$output], JSON_UNESCAPED_UNICODE);
-		}
 		# My Items
 		public function MyItem()
 		{
