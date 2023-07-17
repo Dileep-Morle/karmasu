@@ -654,15 +654,42 @@
             <?php echo form_error("link", "<p class='text-danger' >", "</p>"); ?>
         </div>
         <div class="form-group">
+            <label  class="col-form-label">For User <span class="text-danger">*</span></label>
+            <select class="form-control" name="for_user" required onchange="getUsers(this.value)" value="<?php echo $list[0]->for_user;?>">
+                <option selected disabled>Select</option>
+                <option value="AllEducator">All Educators</option>
+                <option value="Educator">Select Educators</option>
+                <option value="AllStudent">All Students</option>
+                <option value="Student">Select Students</option>
+            </select>
+            <?php echo form_error("for_user","<p class='text-danger' >","</p>"); ?>
+        </div>
+        <div class="form-group">
+            <label class="col-form-label">Parameter <span class="text-danger">*</span></label>
+            <select  class="form-control" name="parameter" required onchange="getParameterData(this.value)">
+                <option value="None" selected>None</option>
+                <option value="Category">Category</option>
+                <option value="Course">Course</option>
+                <option value="Ebook">E-Book</option>
+                <option value="Abook">Audio Book</option>
+                <option value="Quiz">Quiz</option>
+                <option value="LiveSession">Live Session</option>
+                <option value="FreeVideo">Free Video</option>
+                <option value="Offer">Offer</option>
+                <option value="External">External</option>
+            </select>
+            <?php echo form_error("parameter", "<p class='text-danger' >", "</p>"); ?>
+        </div>
+        <!-- <div class="form-group">
             <label class="col-form-label">User ID of Live Session<span class="text-danger"></span></label>
-            <input type="text" class="form-control" name="userid" placeholder="User ID"  value="<?php echo $list[0]->userid;?>">
-            <?php echo form_error("userid", "<p class='text-danger' >", "</p>"); ?>
+            <input type="text" class="form-control" name="userid" placeholder="User ID"  value="<?php //echo $list[0]->id;?>">
+            <?php //echo form_error("userid", "<p class='text-danger' >", "</p>"); ?>
         </div>
         <div class="form-group">
             <label class="col-form-label">Password of Live Session<span class="text-danger"></span></label>
-            <input type="text" class="form-control" name="password" placeholder="Password"  value="<?php echo $list[0]->password;?>" >
-            <?php echo form_error("password", "<p class='text-danger' >", "</p>"); ?>
-        </div>
+            <input type="text" class="form-control" name="password" placeholder="Password"  value="<?php //echo $list[0]->password;?>" >
+            <?php// echo form_error("password", "<p class='text-danger' >", "</p>"); ?>
+        </div> -->
         <div class="form-group">
             <label class="col-form-label">Notification Title <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="notification_title" placeholder="Notification Title"  value="<?php echo $list[0]->notification_title;?>" required>
@@ -673,6 +700,53 @@
             <textarea  class="form-control" name="notification_message" placeholder="Notification Message" required><?php echo $list[0]->notification_message;?></textarea>
             <?php echo form_error("notification_message", "<p class='text-danger' >", "</p>"); ?>
         </div>
+        <script>
+        $(document).ready(function(){
+           function getParameterData(parameter)
+            {
+                // alert(parameter);
+                if(parameter=='External'){
+                    $(".parameter-data").html('<label class="col-form-label">External Link <span class="text-danger">*</span></label><input type="text" class="form-control" name="link" placeholder="Enter Link " required >');
+                    $('.parameter-data').show();
+                }
+                else if(parameter=='None'){
+                    $(".parameter-data").html('');
+                    $('.parameter-data').hide();
+                }
+                else{
+                    
+                    $.ajax({
+                        url: "<?php echo base_url("AdminPanel/Parameters/"); ?>"+parameter,
+                        type: "get",
+                        data: { },
+                        success: function(response) 
+                        {
+                            // alert(response);
+                            $(".parameter-data").html(response);
+                            $('.parameter-data').show(); 
+                        }
+                    });
+                }
+                
+            }
+            
+            function getUsers(type)
+            {
+                $.ajax({
+                    url: "<?php echo base_url("AdminPanel/GetUsers/"); ?>"+type,
+                    type: "get",
+                    data: { },
+                    success: function(response) 
+                    {
+                        // alert(response);
+                        $(".user-data").html(response);
+                        $('.user-data').show(); 
+                    }
+                });
+                
+            }
+        });
+        </script>
         <?php
             break;
             

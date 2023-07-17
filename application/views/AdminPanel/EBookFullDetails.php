@@ -83,10 +83,10 @@
                                         </div>
                                         
                                         <div class="col-sm-12">
-                                            <p><strong><i class="fa fa-user-circle text-primary"></i> <?php echo $author[0]->name; ?> </strong></p>
+                                            <p><strong><i class="fa fa-user-circle text-primary"></i> <?php if(isset($author) !='') { echo $author[0]->name; }?> </strong></p>
                                         </div>
                                         <div class="col-sm-12">
-                                            <p><strong><i class="fa fa-list-alt text-primary"></i> <?php echo $category[0]->title; ?> </strong></p>
+                                            <p><strong><i class="fa fa-list-alt text-primary"></i> <?php if(isset($category) && isset($category->title)){ echo $category->title; } ?> </strong></p>
                                         </div>
                                         <div class="col-sm-12">
                                             <p><strong><i class="fa fa-clock-o text-primary"></i> <?php echo $list[0]->daystofinish; ?> Days To Finish</strong></p>
@@ -177,6 +177,9 @@
                                                                 foreach ($topicList as $item) {
                                                                     if($item->type=='External'){
                                                                         $topic=$item->topic;
+                                                                        ?>
+                                                                        <a href="<?php echo $topic; ?>" target="_blank"><?php echo $topic; ?></a>
+                                                                    <?php
                                                                     }
                                                                     else{
                                                                         $topic=base_url('uploads/topic/'.$item->topic);
@@ -237,7 +240,7 @@
                                             <?php echo $list[0]->will_learn;?>
                                         </div>
                                         <div class="tab-pane" id="sample">
-                                            <iframe style="width:100%;height:430px;"  src="https://docs.google.com/viewerng/viewer?url=<?php echo base_url("uploads/ebook/".$list[0]->sample);?>&hl=en&embedded=true"></iframe>
+                                            <iframe style="width:100%;height:430px;"  src="<?php echo 'https://ebook-karmasu.s3.ap-south-1.amazonaws.com/ebook/'.$list[0]->ebook;?>"></iframe>
                                         </div>
                                     </div>
                                 </div>
@@ -342,7 +345,7 @@
                                             <input type="text" class="form-control " name="name" placeholder="Topic Name" required>
                                             <?php echo form_error("name", "<p class='text-danger' >", "</p>"); ?>
                                         </div>
-                                        <div class="form-group d-none">
+                                        <div class="form-group">
                                             <label class="col-form-label">Topic Type <span class="text-danger">*</span></label>
                                             <select class="form-control" name="type" required onchange="topicType(this.value)">
                                                 <option selected disabled>Select</option>

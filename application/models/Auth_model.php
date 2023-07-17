@@ -115,7 +115,7 @@
 			$itemTypes=(object) ['Course'=>'tbl_course','Ebook'=>'tbl_ebook','Abook'=>'tbl_abook'];
             $query=$this->db->where('id',$itemid)->get($itemTypes->$itemtype);
 			$results=$query->row();
-			$authorData=$this->getData('tbl_tutor',$results->author);
+			$authorData=$this->getData('tbl_tutor',$results->author?? 'Unknown');
 			return $authorData;
 		}
 		

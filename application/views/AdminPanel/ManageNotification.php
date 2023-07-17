@@ -236,7 +236,6 @@
                                         <option value="FreeVideo">Free Video</option>
                                         <option value="Offer">Offer</option>
                                         <option value="External">External</option>
-                                        
                                     </select>
                                     <?php echo form_error("parameter", "<p class='text-danger' >", "</p>"); ?>
                                 </div>

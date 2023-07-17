@@ -77,7 +77,7 @@
                                                     <th>Educator</th>
                                                     <th>Name</th>
                                                     <th>Logo</th>
-                                                    <th>Link</th>
+                                                    <th>Order</th>
                                                     <th>Price</th>
                                                     <th>Duration</th>
                                                     <th>Offer Text</th>
@@ -114,7 +114,8 @@
                                                             src="<?php echo base_url("images/Preloader2.jpg"); ?>"
                                                         class="lazy" style="height:50px;" /> </td>
                                                         <td>
-                                                            <?php echo $item->link; ?>
+                                                            
+                                                            <input type="text" name="order_by" value="<?php echo $item->order_by; ?>" onchange="changeOrder('<?php echo $item->id; ?>', this.value)">
                                                         </td>
                                                         
                                                         <td>
@@ -293,6 +294,26 @@
                     });
                     return status;
                 }
+
+                function changeOrder(id,order_by) {
+                    var status = true;
+                   
+                            $.ajax({
+                                url: "<?php echo base_url("AdminPanel/EbookChangeOrder");?>",
+                                type: "post",
+                                data: {
+                                    'id': id,
+                                    'order_by': order_by,
+                                },
+                                success: function(response) {
+                                    swal("Order changed successfully !", {
+                                        icon: "success",
+                                    });
+                                  //  location.reload();
+                                }
+                            });
+                 }
+                   
             </script>
             
             <?php

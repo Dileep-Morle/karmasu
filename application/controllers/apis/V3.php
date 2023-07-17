@@ -41,6 +41,7 @@
 		public function SplashScreen()
         {
 			$result=$this->db->where(['status'=>'true'])->get('tbl_splash_screen');
+			$values=$result->row();
 			if($result->num_rows())
 			{
 				$output['res']="success"; 
@@ -222,50 +223,51 @@
 			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 
+        
         public function LoginWithGoogle()
 		{
 			$output['res']="error";
             $output['msg']="error";
-			if(!empty($_POST))
-			{
+			if(!empty($_POST))			{   
 				$email=$this->input->post('email');
 				$name=$this->input->post('name');
-              if(empty($_POST['email'] =='')){
-                if(empty($_POST['name'] =='')){
-				if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $wheredata=array('email'=>$email);
-					$result=$this->db->where($wheredata)->get('tbl_registration');
-					if($result->num_rows() > 0)
-					{
-						$values=$result->row();
-						$output['res']='success';
-						$output['msg']="Google Login Success";
-						$output['data']=array($values);
-					}
-					else
-					{
-						$datetime=$this->date.' '.$this->time;
-						$insertData=array('date'=>$datetime,'dateY'=>$this->dateY,"name"=>$name, "email"=>$email);
-						$register = $this->db->insert('tbl_registration',$insertData);
-						$result=$this->db->where($wheredata)->get('tbl_registration');
-						$values=$result->row();
-						$output['res']='success';
-						$output['msg']="Google Login and Register Success";
-						$output['data']=array($values);
-					}
-
-				} 
-				else
-				{
-					$output['res']='error';
-					$output['msg']=$email.'is not a valid email address';
-				}
-                } 
-				else
-				{
-					$output['res']='error';
-					$output['msg']='Name is reqired';
-				}
+                if(empty($_POST['email'] =='')){
+                    if(empty($_POST['name'] =='')){
+                      if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            $wheredata=array('email'=>$email);
+        					$result=$this->db->where($wheredata)->get('tbl_registration');
+        					if($result->num_rows() > 0)
+        					{
+        						$values=$result->row();
+        						$output['res']='success';
+        						$output['msg']="Google Login Success";
+        						$output['data']=array($values);
+        					}
+        					else
+        					{
+        						$datetime=$this->date.' '.$this->time;
+        						$insertData=array('date'=>$datetime,'dateY'=>$this->dateY,"name"=>$name, "email"=>$email);
+        						$register = $this->db->insert('tbl_registration',$insertData);
+        						$result=$this->db->where($wheredata)->get('tbl_registration');
+        						$values=$result->row();
+        						$output['res']='success';
+        						$output['msg']="Google Login and Register Success";
+        						$output['data']=array($values);
+        					}
+        
+        				} 
+        				else
+        				{
+        					$output['res']='error';
+        					$output['msg']=$email.'is not a valid email address';
+        				}
+                            
+                    }
+    				else
+    				{
+    					$output['res']='error';
+    					$output['msg']='Name is reqired';
+    				}
                  } 
 				else
 				{
@@ -281,7 +283,74 @@
 			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 
+//       public function LoginWithGoogle()
+// 		{
+// 			$output['res']="error";
+//             $output['msg']="error";
+// 			if(!empty($_POST))
+// 			{
+// 				$email=$this->input->post('email');
+// 				$name=$this->input->post('name');
+// 				$number=$this->input->post('number');
+//                 if(empty($_POST['email'] =='')){
+//                     if(empty($_POST['name'] =='')){
+// 						if(empty($_POST['number'] =='' && $_POST['number']=10)){
+// 							if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+// 								$wheredata=array('email'=>$email);
+// 								$result=$this->db->where($wheredata)->get('tbl_registration');
+// 								if($result->num_rows() > 0)
+// 								{
+// 									$values=$result->row();
+// 									$output['res']='success';
+// 									$output['msg']="Google Login Success";
+// 									$output['data']=array($values);
+// 								}
+// 								else
+// 								{
+// 									$datetime=$this->date.' '.$this->time;
+// 									$insertData=array('date'=>$datetime,'dateY'=>$this->dateY,"name"=>$name, "email"=>$email, "number"=>$number);
+// 									$register = $this->db->insert('tbl_registration',$insertData);
+// 									$result=$this->db->where($wheredata)->get('tbl_registration');
+// 									$values=$result->row();
+// 									$output['res']='success';
+// 									$output['msg']="Google Login and Register Success";
+// 									$output['data']=array($values);
+// 								}
 
+// 							} 
+// 							else
+// 							{
+// 								$output['res']='error';
+// 								$output['msg']=$email.'is not a valid email address';
+// 							}
+// 						} 
+// 						else
+// 						{
+// 							$output['res']='error';
+// 							$output['msg']='Number is reqired';
+// 						}
+// 					} 
+// 					else
+// 					{
+// 						$output['res']='error';
+// 						$output['msg']='Name is reqired';
+// 					}
+//                 } 
+// 				else
+// 				{
+// 					$output['res']='error';
+// 					$output['msg']='Email address is reqired';
+// 				}
+// 			}
+// 			else
+// 			{
+// 				$output['res']='error';
+// 				$output['msg']="Something went wrong.";	
+// 			}
+// 			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+// 		}
+
+    
 		public function ShopCategoryList()
 		{
           
@@ -301,6 +370,77 @@
             echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 	
+		public function LiveSessionsCheckType()
+		{
+          
+          $output['res']="error";
+          $output['msg']="error";
+		  $course = $this->input->post('course');
+		//   print_r($userid);die;
+		// $type = $this->input->post('type');
+		  $liveid = $this->input->post('liveid');
+			if($liveid !==''){
+				$this->db->select('*');
+				$this->db->from('tbl_live_video');
+				$this->db->join('tbl_live_join', 'tbl_live_join.liveid = tbl_live_video.id', 'inner');
+				$this->db->join('tbl_course', 'tbl_live_video.course = tbl_course.id', 'left');
+				$this->db->where(['liveid'=> $liveid, 'course'=>$course]);
+				$query = $this->db->get();
+				$result = $query->row();
+				// if ($result !== null && $result->type !== $type)
+				if ($result !== null)
+				{
+					$output['res']="success";
+					$output['msg']="you are eligible for live session";
+					$output['result']=$result;
+				}
+				else{
+					$output['res']='failled';
+					$output['msg']="You are not eligible for live session please enrol the course";
+				}
+				
+			}else{
+				$output['res']='failled';
+				$output['msg']="user id is blanck";
+			}
+				
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+	    }
+
+		public function UserPaidfreeCheck()
+		{
+          
+          $output['res']="error";
+          $output['msg']="error";
+		  $userid = $this->input->get('userid');
+		  $type = $this->input->post('type');
+		  $itemid = $this->input->post('itemid');
+			if(!$userid ==null){
+				$this->db->select('tbl_enroll.userid, tbl_enroll.itemid, tbl_course.type');
+				$this->db->from('tbl_enroll');
+				$this->db->join('tbl_course', 'tbl_enroll.itemid = tbl_course.id', 'inner');
+				$this->db->where('userid', $userid);
+				$query = $this->db->get();
+				$result = $query->row();
+				if ($result !== null && $result->type !== $type)
+				{
+					$output['res']="success";
+					$output['msg']="you are eligible for live session";
+					$output['result']=$result;
+				}
+				else{
+					$output['res']='failled';
+					$output['msg']="You are not eligible for live session please enrol the course";
+				}
+				
+			}else{
+				$output['res']='failled';
+				$output['msg']="user id is blanck";
+			}
+				
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+	    }
+
 		public function SpiritualityList()
 		{
           $output['res']="error";
@@ -322,7 +462,407 @@
             echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 		
-      public function AbookByCategory()
+		public function UserDetailsGetById() {
+			$output['res']="error";
+			$output['msg']="not get data";
+			$userid=$this->input->get('id');
+			if($userid !==''){
+				$result=$this->db->where('id', $userid)->get('tbl_registration');
+				$values = $result->row();
+				if($result->num_rows()){
+				$output['res']='success';
+				$output['msg']='User detail get successfully';
+				$output['data']=$values;
+				}
+				else{
+					$output['res']='error';
+					$output['msg']='Uesr details not get something went wrong';
+				}
+			}else{
+				$output['res']='error';
+				$output['msg']='Uesr id not found';
+			}
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+		public function UserNumberUpdateById() {
+			$output['res']="error";
+			$output['msg']="not get data";
+			$userid=$this->input->get('id');
+			$number=$this->input->post('number');
+			if($userid !==''){
+			  $this->db->where(['id'=>$userid]);
+			  $updated = $this->db->update('tbl_registration', ['number' => $number]);
+			  $output['res']='success';
+			  $output['msg']='User detail get successfully';
+			  $output['data']=$this->db->where('id', $userid)->get('tbl_registration')->row();
+				
+			  
+			}else{
+			  $output['res']='error';
+			  $output['msg']='Uesr id not found';
+			}
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+
+		public function EbookGetById() {
+			$output['res']="error";
+			$output['msg']="Ebook data not get";
+			$ebookid=$this->input->get('id');
+			if($ebookid !==''){
+				$result=$this->db->where('id', $ebookid)->get('tbl_ebook');
+				$values = $result->row();
+				if($result->num_rows()){
+				$output['res']='success';
+				$output['msg']='Ebook data get successfully';
+				$output['data']=$values;
+				}
+				else{
+					$output['res']='error';
+					$output['msg']='Ebook data not get something went wrong';
+				}
+			}else{
+				$output['res']='error';
+				$output['msg']='Ebook data id is not found';
+			}
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+
+		public function EbookPdfRemoveById() {
+			$output['res']="error";
+			$output['msg']="not get data";
+			$ebookid=$this->input->get('id');
+			$ebook=$this->input->post('ebook');
+			$ebookData = $this->db->where('id', $ebookid)->get('tbl_ebook')->row();
+			if($ebookid !==''){
+				$ebookData = $this->db->where('id', $ebookid)->get('tbl_ebook')->row();
+				$ebookPath = 'uploads/ebook/' . $ebookData->ebook;
+				if(is_file($ebookPath)){
+					unlink(realpath($ebookPath));
+					$this->db->where(['id'=>$ebookid]);
+				    $updated = $this->db->update('tbl_ebook', ['ebook' => $ebook]);
+					$output['res']='success';
+			        $output['msg']='Ebook pdf remove successfully';
+					$output['data']=$this->db->where('id', $ebookid)->get('tbl_ebook')->row();
+				} else {
+					$output['res']='error';
+					$output['msg']='Ebook pdf not available';
+				}
+				
+			}else{
+			  $output['res']='error';
+			  $output['msg']='Uesr id not found';
+			}
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+
+		public function EbookPdfUpdateById() {
+			$output['res']="error";
+			$output['msg']="not get data";
+			$ebookid=$this->input->get('id');
+			$ebook=$_FILES['ebook'];
+			$config['ebook'] = base_url().'uploads/ebook/' .$ebook;
+			$config['allowed_types'] = 'pdf';
+			$config['max_size'] = 2048; // 2MB
+			$config['overwrite'] = true;
+			$this->load->library('upload', $config);
+			
+			if ($this->upload->do_upload('ebook')){
+				// Update the image data in the database
+				if($ebookid !==''){
+					$this->db->where(['id'=>$ebookid]);
+					$updated = $this->db->update('tbl_ebook', ['ebook' => $ebook]);
+					$output['res']='success';
+					$output['msg']='Ebook pdf update successfully';
+					$output['data']=$this->db->where('id', $ebookid)->get('tbl_ebook')->row();
+				}else{
+				  $output['res']='error';
+				  $output['msg']='Uesr id not found';
+				}
+				// Redirect or show success message
+				// ...
+			} else {
+				// Image upload failed
+				$error = $this->upload->display_errors();
+				
+				// Redirect or show error message
+				// ...
+			}
+
+			
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+		}
+
+		public function LiveSessionsCheck()
+		{
+			$table="tbl_live_video";
+			
+			$output['res']="error";
+			$output['msg']="error";
+			$output['data']="";
+			if($this->uri->segment(4)){
+				$action=$this->uri->segment(4);
+				if($action=='List'){
+					
+					$orderBy= "'id','DESC'";
+					$result=$this->db->where(['status'=>'true'])->order_by('timing','DESC')->get($table);
+					$count=$result->num_rows();
+					if($count){
+						
+						$output['res']='success';
+						$output['msg']=$count.' Record Found';
+						
+						$i=0;
+						$return=[];
+						foreach($result->result() as $live)
+						{
+							$return[$i]=$live;
+							$getYoutubeLinkData=$this->Auth_model->getYoutubeLinkData($live->link);
+                            $return[$i]->YoutubeId=$getYoutubeLinkData->id;
+							$return[$i]->author=$this->db->where(['id'=>$live->author])->get('tbl_tutor')->row();
+							$result1=$this->db->where(['liveid'=>$live->id,'userid'=>$this->userid])->get('tbl_live_join');
+							if($result1->num_rows()){
+								$joined='true';
+							}
+							else{
+								$joined='false';
+							}
+							$return[$i]->joined=$joined;
+							$no_of_students=$this->db->where(['liveid'=>$live->id])->get('tbl_live_join')->num_rows();
+							$return[$i]->no_of_students=$no_of_students;
+							
+							$remaining_time=$this->diff_dates($live->timing, "minutes");
+							$return[$i]->remaining_time=$remaining_time;
+							$i++;
+						}
+						$output['data']=$return;
+					}
+					else{
+						$output['msg']="No Record Found";
+					}
+				}
+				else if($action=='Join' and !empty($_POST))
+				{
+					
+					if($this->form_validation->run('liveJoin')) 
+					{
+						$id=$this->input->post('liveid');
+						$whereData=[
+						"userid" => $this->input->post('userid'),
+						"liveid" => $this->input->post('liveid'),
+						];
+						$liveResult=$this->db->where(['id'=>$id])->get($table)->result();
+						$liveResult[0]->author=$this->db->where(['id'=>$liveResult[0]->author])->get('tbl_tutor')->row();
+						
+						$remaining_time=$this->diff_dates($liveResult[0]->timing, "minutes");
+						$liveResult[0]->remaining_time=$remaining_time;
+						
+						$result=$this->db->where($whereData)->get('tbl_live_join');
+						$count=$result->num_rows();
+						if($count)
+						{
+							$output['res']="success";
+							$output['msg']="Already joined this live session.";
+							$output['data']=$liveResult;
+						}
+						else{
+							$data_to_insert = array(
+							"userid" => $this->input->post('userid'),
+							"liveid" => $this->input->post('liveid'),
+							"name" => $this->input->post('name'),
+							"email" => $this->input->post('email'),
+							"mobile" => $this->input->post('mobile'),
+							"date" => $this->date,
+							"time" => $this->time,
+							);
+							
+							$query=$this->db->insert('tbl_live_join',$data_to_insert);	
+							if($query){
+								$output['res']="success";
+								$output['msg']="Successfully joined this live session.";
+								$output['data']=$liveResult;
+							}
+							else{
+								$output['msg']="Try !again";
+							}
+						}
+						
+					}
+					else
+					{
+						$msg=explode('</p>',validation_errors());
+						$output['msg']=str_ireplace('<p>','', $msg[0]);
+					}
+					
+				}
+				else if($action=='JoinWithoutInformation' and !empty($_POST))
+				{
+					
+					if(!empty($this->input->post('liveid')) and !empty($this->input->post('userid'))) 
+					{
+						$id=$this->input->post('liveid');
+						$userid = $this->input->post('userid');
+						$whereData=[
+						"userid" => $this->input->post('userid'),
+						"liveid" => $this->input->post('liveid'),
+						];
+						$liveResult=$this->db->where(['id'=>$id])->get($table)->result();
+						$liveResult[0]->author=$this->db->where(['id'=>$liveResult[0]->author])->get('tbl_tutor')->row();
+						
+						$liveResult[0]->course=$this->db->where(['id'=>$liveResult[0]->course])->get('tbl_course')->row();
+						
+						$liveResult[0]->enroll=$this->db->where(['userid'=>$userid])->get('tbl_enroll')->row();
+				// 		print_r($liveResult[0]->enroll);die;
+						$remaining_time=$this->diff_dates($liveResult[0]->timing, "minutes");
+						$liveResult[0]->remaining_time=$remaining_time; 
+						
+						$result=$this->db->where($whereData)->get('tbl_live_join');
+						$count=$result->num_rows();
+						if($count)
+						{
+						    if ($liveResult[0] !== null && is_object($liveResult[0]->course->type == 'Paid') && is_object($liveResult[0]->enroll->userid==$userid) && property_exists($liveResult[0], 'userid')) {
+						  //  if($userid !==null && $liveResult[0]->course->type == 'Paid' && $liveResult[0]->enroll->userid==$userid){
+    							$output['res']="success";
+    							$output['msg']="Allready enroll the course joined this live session.";
+    			                $output['data']=$liveResult;
+						        
+						    }elseif($liveResult[0]->course->type == 'Free'){
+						        $output['res']="success";
+    							$output['msg']="This live session is free join the live session.";
+    							$output['data']=$liveResult;
+    			                
+						    }
+						    else{
+						        $output['res']="Failled";
+    							$output['msg']="Please enroll the course for join the live session.";
+    			                
+						    }
+						}
+						else{
+							$userResult=$this->db->where(['id'=>$this->userid])->get('tbl_registration')->row();
+							$data_to_insert = array(
+							"userid" => $this->input->post('userid'),
+							"liveid" => $this->input->post('liveid'),
+							"name" => $userResult->name,
+							"email" => $userResult->email,
+							"mobile" => $userResult->number,
+							"date" => $this->date,
+							"time" => $this->time,
+							);
+							
+							$query=$this->db->insert('tbl_live_join',$data_to_insert);	
+							if($query){
+								$output['res']="success";
+								$output['msg']="Successfully joined this live session.";
+								$output['data']=$liveResult;
+							}
+							else{
+								$output['msg']="Try !again";
+							}
+						}
+						
+					}
+					else
+					{
+						$output['msg']="Live ID and User ID is empty.";
+					}
+					
+				}
+				else if($action=='FullDetails' and !empty($_POST)){
+					
+					if(!empty($this->input->post('liveid'))) 
+					{
+						$id=$this->input->post('liveid');
+						
+						$result=$this->db->where("id",$id)->order_by("id", "DESC")->get($table);
+						$count=$result->num_rows();
+						if($count)
+						{
+							$output['res']='success';
+							$output['msg']=$count.' Record Found';
+							
+							$data=$result->result();
+							
+							$author=$data[0]->author;					
+							$result1=$this->db->where("id",$author)->get("tbl_tutor");
+							$data[0]->author=$result1->result()[0];
+							
+							$getYoutubeLinkData=$this->Auth_model->getYoutubeLinkData($data[0]->link);
+                            $data[0]->YoutubeId=$getYoutubeLinkData->id;
+                            
+							$result=$this->db->where(['liveid'=>$id,'userid'=>$this->userid])->get('tbl_live_join');
+							if($result->num_rows()){
+								$joined='true';
+							}
+							else{
+								$joined='false';
+							}
+							
+							$data[0]->joined=$joined;
+							$no_of_students=$this->db->where(['liveid'=>$id])->get('tbl_live_join')->num_rows();
+							$data[0]->no_of_students=$no_of_students;
+							
+							$remaining_time=$this->diff_dates($data[0]->timing, "minutes");
+							$data[0]->remaining_time=$remaining_time; 
+							
+							$result2=$this->db->where(['liveid'=>$id,'status'=>'true'])->get('tbl_live_question');
+								$questions=[];
+								if($result2->num_rows()){
+									
+									
+									$k=0;
+									foreach($result2->result() as $question){
+										
+										$result3 = $this->db->where(['questionid'=>$question->id,'status'=>'true'])->get('tbl_live_reply');
+										if($result3->num_rows()){
+											$reply_status='true';
+											
+											$l=0;
+											$reply=[];
+											foreach($result3->result() as $rep){
+												$reply[$l]=$rep;
+												if($rep->usertype=='Admin'){
+													$name='Karmasu Admin';
+													$profile_photo='logo.png';
+												}
+												else{
+													$name='Karmasu Educator';
+													$profile_photo='logo.png';
+												}
+												$user=['name'=>$name,'profile_photo'=>$profile_photo];
+												$reply[$l]->user= (object) $user;
+												$l++;
+											}
+										}
+										else{
+											$reply_status='false';
+											$reply=[];
+										}
+										$questions[$k]=$question;
+										$questions[$k]->user=$this->db->where(['id'=>$question->userid])->get('tbl_registration')->row();
+										$questions[$k]->reply_status=$reply_status;
+										$questions[$k]->reply=$reply;
+										
+										$k++;
+									}
+								}
+								$data[0]->question=$questions;
+							$output['data']=$data;
+						}
+						else{
+							$output['msg']="No Record Found";
+						}
+					}
+					else
+					{
+						$output['msg']="Live Sessions  ID is required.";
+					}
+					
+				}
+			}
+			echo json_encode([$output], JSON_UNESCAPED_UNICODE);
+			
+		}
+        public function AbookByCategory()
 		{
           $output['res']="error";
           $output['msg']="error";
@@ -372,6 +912,8 @@
             echo json_encode([$output], JSON_UNESCAPED_UNICODE);
 		}
 		
+		
+
 		#Logout
 		public function Logout()
 		{
@@ -2296,7 +2838,7 @@
 					    $whereData=['apprstatus'=>'true','type'=>$this->input->post('type')];
 					}
 					
-					$result=$this->db->where($whereData)->where_not_in('id',$EnrolledItems)->order_by($orderByColumn,$orderByValue)->get($table);
+					$result=$this->db->where($whereData)->where_not_in('id',$EnrolledItems)->order_by("order_by","DESC", $orderByColumn,$orderByValue)->get($table);
 					
 					$count=$result->num_rows();
 					if($count){
@@ -3115,6 +3657,7 @@
 						$whereData=[
 						"userid" => $this->input->post('userid'),
 						"liveid" => $this->input->post('liveid'),
+						
 						];
 						$liveResult=$this->db->where(['id'=>$id])->get($table)->result();
 						$liveResult[0]->author=$this->db->where(['id'=>$liveResult[0]->author])->get('tbl_tutor')->row();

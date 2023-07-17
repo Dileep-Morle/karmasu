@@ -102,8 +102,8 @@
 														<td><?php echo $sr; ?></td>
 														<?php if($this->uri->segment(3)=='success'){ ?>
 															<td>
-																<?php echo $educatorData->name.' ('.$educatorData->designation.')'; ?><br>
-																[<?php echo $educatorData->username;?>]
+																<?php if(isset($educatorData->name)) echo $educatorData->name.' ('.$educatorData->designation.')'; ?><br>
+																[<?php if(isset($educatorData->username)) echo $educatorData->username;?>]
 																<input type="checkbox"
 																onchange="return EducatorStatus(this,'tbl_enroll','id','<?php echo $item->id; ?>','educator_status')" <?php if ($item->educator_status == 'true') { echo "checked"; } ?> class="js-switch" data-color="#1da1f2" data-size="small">
 															</td>

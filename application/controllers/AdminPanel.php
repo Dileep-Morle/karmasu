@@ -1,5 +1,23 @@
 <?php
     defined("BASEPATH") or exit("No direct scripts allowed here");
+    ini_set('memory_limit','-1');
+    error_reporting(E_ALL);
+   /*  require '/application/aws-sdk/autoload.php';
+    
+    use Aws\S3\S3Client;
+
+    $region = 'us-west-2'; // Replace with your desired AWS region
+    $version = 'latest';   // Replace with the desired AWS SDK version
+
+    $s3 = new S3Client([
+        'region' => $region,
+        'version' => $version
+    ]);
+
+    $bucketName = 'YOUR_BUCKET_NAME'; // Replace with your bucket name */
+    use Aws\S3\S3Client;
+    use Aws\S3\Exception\S3Exception;
+    include(APPPATH.'\third_party\aws-sdk\aws-autoloader.php');
     class AdminPanel extends MY_Controller
     {
         private $date, $time;
@@ -15,6 +33,7 @@
             
             $this->load->library('CodersAdda');
             $this->load->library('Razorpay');
+            $this->load->library('s3_upload');
             $this->load->library('form_validation');
             $this->load->model('Auth_model');
             
@@ -463,7 +482,7 @@
                     $query = $this->db->where('id', $id)->get($table);
                     if ($query->num_rows()) 
                     {
-                        $data["list"] = $query->result();
+                        $data["lists"] = $query->result();
                         $data['author']=$this->db->where('id',$data["list"][0]->author)->get('tbl_tutor')->result();
                         
                         $data['category']=$this->db->where('id',$data["list"][0]->category)->get('tbl_category')->result();
@@ -1171,7 +1190,7 @@
                                 "date" => $this->date,
                                 "time" => $this->time
                                 );
-                                
+
                                 $data_to_insert = $this->security->xss_clean($data_to_insert);
                                 if ($this->db->insert('tbl_topic', $data_to_insert)) 
                                 {
@@ -1208,8 +1227,11 @@
                 else 
                 {
                     if($action=='Add'){
+                        
+
                         if (isset($_POST["addaction"])) 
                         {    
+
                             $this->form_validation->set_rules('ebookname', 'EBook Name', 'required', array(
                             'required' => '%s is Required Field'
                             ));
@@ -1220,23 +1242,18 @@
                             $this->form_validation->set_rules('ebookshortdescription', 'Short Description', 'required');
                             $this->form_validation->set_rules('noofpages', 'No of Pages', 'required');
                             $this->form_validation->set_rules('daystofinish', 'Days to Dinish', 'required');
-                            $this->form_validation->set_rules('link', 'EBook Link', 'required');
-                            // $this->form_validation->set_rules('description', 'Description', 'required');
-                            // $this->form_validation->set_rules('requirement', 'Requirements', 'required');
-                            // $this->form_validation->set_rules('ebook_include', 'What this ebook include ?', 'required');
-                            // $this->form_validation->set_rules('will_learn', 'What you will learn ?', 'required');
                             if (empty($_FILES["ebooklogo"]["name"])) {
                                 $this->form_validation->set_rules('ebooklogo', 'EBook Logo/image', 'required');
                             }
                             if (empty($_FILES["ebookbanner"]["name"])) {
                                 $this->form_validation->set_rules('ebookbanner', 'EBook Banner', 'required');
                             }
-                            if (empty($_FILES["ebooksample"]["name"])) {
-                                $this->form_validation->set_rules('ebooksample', 'EBook Sample', 'required');
-                            }
-                            if (empty($_FILES["ebook"]["name"])) {
-                                // $this->form_validation->set_rules('ebook', 'EBook PDF File', 'required');
-                            }
+                            // if (empty($_FILES["ebooksample"]["name"])) {
+                            //     //$this->form_validation->set_rules('ebooksample', 'EBook Sample', 'required');
+                            // }
+                            // if (empty($_FILES["ebook"]["name"])) {
+                            //     // $this->form_validation->set_rules('ebook', 'EBook PDF File', 'required');
+                            // }
                             if ($this->form_validation->run() == FALSE){
                                 $msg=explode('</p>',validation_errors());
                                 $msg=str_ireplace('<p>','', $msg[0]);
@@ -1251,20 +1268,20 @@
                                 $banner_ext      = pathinfo($_FILES["ebookbanner"]["name"], PATHINFO_EXTENSION);
                                 $banner_filename = time() . "_ebook_banner." . $banner_ext;
                                 
-                                $sample_ext      = pathinfo($_FILES["ebooksample"]["name"], PATHINFO_EXTENSION);
-                                $sample_filename = time() . "_ebook_sample." . $sample_ext;
-                                
+                                // $sample_ext      = pathinfo($_FILES["ebooksample"]["name"], PATHINFO_EXTENSION);
+                                // $sample_filename = time() . "_ebook_sample." . $sample_ext;
+
                                 $ebook_ext      = pathinfo($_FILES["ebook"]["name"], PATHINFO_EXTENSION);
-                                $ebook_filename = time() . "_ebook." . $ebook_ext;
-                                
+                                // $ebook_filename = $_FILES["ebook"]["name"];
+                                 $ebook_filename = time(). '.' . $ebook_ext;
+                                //  print_r($ebook_filename); 
                                 $data_to_insert                = array(
                                 "category" => $this->input->post("category"),
                                 "author" => $this->input->post("author"),
                                 "name" => $this->input->post("ebookname"),
                                 "logo" => $logo_filename,
-                                "link" => $this->input->post("link"),
                                 "banner" => $banner_filename,
-                                "sample" => $sample_filename,
+                               // "sample" => $sample_filename,
                                 "ebook" => $ebook_filename,
                                 "type" => $this->input->post("ebooktype"),
                                 "price" => $this->input->post("ebookprice"),
@@ -1278,6 +1295,7 @@
                                 "date" => $this->date,
                                 "time" => $this->time
                                 );
+                                
                                 $data_to_insert                = $this->security->xss_clean($data_to_insert);
                                 $data_to_insert["description"] = $this->input->post("description");
                                 $data_to_insert["requirement"] = $this->input->post("requirement");
@@ -1309,27 +1327,42 @@
                                         ));
                                     }
                                     
-                                    $config['upload_path']   = './uploads/ebook/';
-                                    $config['allowed_types'] = 'pdf';
-                                    $config['max_size']      = 10000000; // In KB
-                                    $config['file_name']     = $sample_filename;
-                                    $this->upload->initialize($config);
-                                    if (!$this->upload->do_upload('ebooksample')) {
-                                        array_push($upload_errors, array(
-                                        'error_upload_logo' => $this->upload->display_errors()
-                                        ));
-                                    }
+                                    // $config['upload_path']   = './uploads/ebook/';
+                                    // $config['allowed_types'] = 'pdf';
+                                    // $config['max_size']      = 10000000; // In KB
+                                    // $config['file_name']     = $sample_filename;
+                                    // $this->upload->initialize($config);
+                                    // if (!$this->upload->do_upload('ebooksample')) {
+                                    //     array_push($upload_errors, array(
+                                    //     'error_upload_logo' => $this->upload->display_errors()
+                                    //     ));
+                                    // }
                                     
                                     if (!empty($_FILES["ebook"]["name"])) {
-                                        $config['upload_path']   = './uploads/ebook/';
-                                        $config['allowed_types'] = 'pdf';
-                                        $config['max_size']      = 50000; // In KB
-                                        $config['file_name']     = $ebook_filename;
-                                        $this->upload->initialize($config);
-                                        if (!$this->upload->do_upload('ebook')) {
-                                            array_push($upload_errors, array(
-                                            'error_upload_logo' => $this->upload->display_errors()
-                                            ));
+                                        
+                                        $file['file_name'] = $_FILES['file']['name']     = $_FILES['ebook']['name'];
+                                        $file['type'] =  $_FILES['file']['type']     = $_FILES['ebook']['type'];
+                                        $file['tmp_name']  =  $_FILES['file']['tmp_name'] = $_FILES['ebook']['tmp_name'];
+                                        $file['error']  =  $_FILES['file']['error']    = $_FILES['ebook']['error'];
+                                        $file['size'] =   $_FILES['file']['size']     = $_FILES['ebook']['size'];
+                                            //print_r($_FILES);
+                                            // $file['tmp_name'] = $_FILES['ebook']['tmp_name'];
+                                            $bucket = 'ebook-karmasu';
+                                            // $destinationPath = 'ebook/'.$file['file_name'];
+                                            $dir = dirname($file['tmp_name']);
+                                            $destination = time().'.'.pathinfo($_FILES['ebook']['name'],PATHINFO_EXTENSION);
+                                            // rename($_FILES["file"]["tmp_name"], $destination);
+                                            // print_r($destination);
+                                            
+                                            $upload = $this->s3_upload->upload($_FILES["ebook"], $bucket, $destination);
+                                            
+                                        // print_r($result);die;
+                                        if ($upload) {
+                                            // Image uploaded successfully
+                                            echo 'Image URL: ' . $upload;
+                                        } else {
+                                            // Failed to upload image
+                                            echo 'Failed to upload image.';
                                         }
                                     }
                                     
@@ -1381,6 +1414,7 @@
                                     $this->form_validation->set_rules('ebookshortdescription', 'Short Description', 'required');
                                     $this->form_validation->set_rules('noofpages', 'No of Pages', 'required');
                                     $this->form_validation->set_rules('daystofinish', 'Days to Dinish', 'required');
+                                    $this->form_validation->set_rules('link', 'EBook Link', 'required');
                                     
                                     // $this->form_validation->set_rules('description', 'Description', 'required');
                                     // $this->form_validation->set_rules('requirement', 'Requirements', 'required');
@@ -1431,9 +1465,9 @@
                                         "author" => $this->input->post("author"),
                                         "name" => $this->input->post("ebookname"),
                                         "logo" => $logo_filename,
-                                        "link" => $this->input->post("link"),
+                                        // "link" => $this->input->post("link"),
                                         "banner" => $banner_filename,
-                                        "sample" => $sample_filename,
+                                        // "sample" => $sample_filename,
                                         "ebook" => $ebook_filename,
                                         "type" => $this->input->post("ebooktype"),
                                         "price" => $this->input->post("ebookprice"),
@@ -1566,13 +1600,36 @@
             else 
             {
                 if(!empty($_REQUEST['author'])){
-                    $query = $this->db->where('author',$_REQUEST['author'])->order_by("apprstatus", "DESC")->get($table);
+                    $query = $this->db->where('author',$_REQUEST['author'])->order_by('apprstatus','ASC')->order_by("order_by", "DESC")->get($table);
                 }
                 else{
-                    $query = $this->db->order_by("apprstatus", "DESC")->get($table);
+                    $query = $this->db->order_by('apprstatus','ASC')->order_by("order_by", "DESC")->get($table);
                 }
                 $data["list"] = $query->result();
                 $this->load->view("AdminPanel/ManageEBooks", $data);
+            }
+        }
+        public function EbookChangeOrder()
+        {
+            if ($this->input->post()) {
+                $data = $this->input->post();
+                $id = $data['id'];
+                $order_by = $data['order_by'];
+                
+                $result = $this->db->update("tbl_ebook",['order_by'=>$order_by], ['id'=>$id]);
+                // print_r($result);die;
+                if($result) 
+                {
+                    echo true;
+                } 
+                else 
+                {
+                    echo false;
+                }
+            }
+            else 
+            {
+                echo false;
             }
         }
         
@@ -1632,6 +1689,7 @@
                             $this->form_validation->set_rules('itemtype', 'Item Type', 'required');
                             $this->form_validation->set_rules('itemid', 'Item Id', 'required');
                             $this->form_validation->set_rules('type', 'Topic Type', 'required');
+                           
                             
                             
 							
@@ -1669,6 +1727,7 @@
                                 "type" => $this->input->post("type"),
                                 "name" => $this->input->post("name"),
                                 "topic" => $topic,
+                                "topic_link" => $this->input->post("topic_link"),
                                 "description" => $this->input->post("description"),
                                 "status" => "true",
                                 "date" => $this->date,
@@ -4012,7 +4071,8 @@
 								"status" => "true",
 								"date" => $this->date,
 								"time" => $this->time 
-                                );
+                            );
+                                
                                 $data_to_insert = $this->security->xss_clean($data_to_insert);
                                 
                                 
@@ -4032,6 +4092,7 @@
                                     #Send Notification 
                                     
                                     $id=$this->input->post("data");
+                                    
                                     $type=$this->input->post("parameter");
                                     if($type=='Quiz'){
                                         $results=$this->db->where('quiz_id',$id)->get('tbl_quiz_scheduled');
@@ -4815,8 +4876,9 @@
             }
         }
         
-        # App Live Video
         
+        # App Live Video
+       
         public function ManageLiveVideo()
         {
             $table='tbl_live_video';
@@ -4827,7 +4889,7 @@
                 if ($this->uri->segment(4) == TRUE) 
                 {
                     $id = $this->uri->segment(4);
-                    $query = $this->db->where('id', $id)->get($table);
+                    $query = $this->db->where('id', $id)->get($table);  
                     if ($query->num_rows()) 
                     {
                         $data["list"] = $query->result();
@@ -4990,6 +5052,7 @@
                                     $certificate_charge=$this->input->post("certificate_charge");
                                     $km_charge=$this->input->post("km_charge");
                                 }
+
                                 $data_to_insert= array(
                                 "thumbnail" => $image,
                                 "subject" =>strtoupper($this->input->post("subject")),
@@ -4999,9 +5062,8 @@
                                 "link" => $this->input->post("link"),
                                 "timing" => $this->input->post("timing"),
                                 "duration" => $this->input->post("duration"),
-                                "parameter" =>$this->input->post("parameter"),
-                                "for_user" => $this->input->post("for_user"),
-                                "users" =>implode(',',$users),
+                                "course" => $this->input->post("course"),
+                                "session_type" => $this->input->post("session_type"),
                                 "password" => $this->input->post("password"),
                                 "certification" => $this->input->post("certificationcheck"),
 								"certificate" => $certificate,
@@ -5014,7 +5076,6 @@
                                 );
                                 
                                 $data_to_insert = $this->security->xss_clean($data_to_insert);
-                               
                                 $message=$this->input->post("description");
                                 $title=$this->input->post("title");
                                
@@ -5026,67 +5087,6 @@
                                     $config['file_name']     = $image;
                                     $this->load->library('upload', $config);
                                     $this->upload->do_upload('thumbnail');
-                                  }
-                                       #Send Notification 
-                                    
-                                    $id=$this->input->post("id");
-                                    $type=$this->input->post("parameter");
-                                    if($type=='LiveSession'){
-                                        $results=$this->db->where('liveid',$id)->get('tbl_live_join');
-                                        if($results->num_rows()>0){
-                                            $result=$results->row();
-                                           
-                                            $id=$result->id;
-                                        }
-                                        else{
-                                            $type='None';
-                                            $id='';
-                                        }
-                                    }
-                                    $click_action=$this->firebaseActivities[$type];
-                                    
-                                    if($this->input->post("for_user")=='Student')
-                                    {
-                                      $uresult=$this->db->where_in('userid',$users)->get('tbl_apptoken');
-                                        if($uresult->num_rows())
-                                        {
-                                            if($uresult->num_rows()>1)
-                                            {
-                                                $alltoken=array();
-                                                $alluser=array();
-                                                
-                                                foreach($uresult->result() as $item)
-                                                {
-                                                    $alltoken[]=$item->token;
-                                                    $alluser[]=$item->userid;
-                                                }
-                                                
-                                                $start=0;
-                                                while($start<count($alltoken))
-                                                {
-                                                    $sendtoken=array_slice($alltoken,$start,$start+999);
-                                                    
-                                                    $return=$this->codersadda->send_notification_multiple($message,$title,$sendtoken,$image_url,$click_action,$id,$type);
-                                                    $start=$start+999;
-                                                }
-                                                $user_id=implode(',',$alluser);
-                                            }
-                                            else
-                                            { 
-                                                 $uvalues=$uresult->row();
-                                                $return=$this->codersadda->send_notification_single($message,$title,$uvalues->token,$image_url,$click_action,$id,$type);
-                                                 $user_id=implode(',',$users);
-                                            }
-                                           
-                                            
-                                        }
-                                     
-                                        
-                                        
-                                        
-                                      
-                                    
-                                  $this->session->set_flashdata(array('res'=>'success','msg'=>'Live Session Started.')); 
                                 }
                                 else 
                                 {
@@ -5147,8 +5147,8 @@
                                         "link" => $this->input->post("link"),
                                         "timing" => $this->input->post("timing"),
                                         "duration" => $this->input->post("duration"),
-                                        "userid" => $this->input->post("userid"),
-                                        "password" => $this->input->post("password"),
+                                        "course" => $this->input->post("course"),
+                                        "session_type" => $this->input->post("session_type"),
                                         "certification" => $this->input->post("certificationcheck"),
                                         "certificate" => $certificate,
                                         "certificate_charge" => $certificate_charge,
@@ -5209,12 +5209,15 @@
                                     {
                                         $getYoutubeLinkData=$this->Auth_model->getYoutubeLinkData($this->input->post("link"));
                                         $_POST['link']=$getYoutubeLinkData->embedUrl;
+                                        $query = $this->db->where('id', $this->input->post("id"))->get($table);
+                                        
                                         $data_to_update= array(
                                         "link" => $this->input->post("link"),
-                                        "userid" => $this->input->post("userid"),
-                                        "password" => $this->input->post("password"),
                                         "notification_title" => $this->input->post("notification_title"),
                                         "notification_message" => $this->input->post("notification_message"),
+                                        "parameter" =>$this->input->post("parameter"),
+                                        "for_user" => $this->input->post("for_user"),
+                                        "users" =>implode(',',$users),
                                         "session_status" => 'Started',
                                         "started_at" => $this->data->timestamp
                                         );
@@ -5336,12 +5339,14 @@
             }
             else 
             {
+                
                 if(!empty($_REQUEST['author'])){
-                    $query = $this->db->where('author',$_REQUEST['author'])->order_by("id", "DESC")->get($table);
+                    $query = $this->db->where('session_status',$_REQUEST['author'])->order_by("id", "DESC")->get($table);
                 }
                 else{
                     $query = $this->db->order_by("id", "DESC")->get($table);
                 }
+               
                 $data["list"] = $query->result();
                 $data['authorlist']=$this->db->where('status','true')->get('tbl_tutor')->result();
                 if($query->num_rows()){
@@ -5352,11 +5357,20 @@
                     }
 					$data["list"]=$return;
                 }
+                  
+                $courseresult = $this->db->order_by("id", "desc")->get('tbl_course');
+                $data["courselist"] = $courseresult->result();
+                
 				$this->load->view("AdminPanel/ManageLiveVideo", $data);
             }
         }
-        
-        
+        public function getDataByType()
+        {
+            $courseId = $this->input->post('option');
+            $query = $this->db->select('id, type')->from('tbl_course')->where('id', $courseId)->get();
+            $data = $query->result();
+            echo json_encode($data);
+        }
         # Contact Management
         
         public function ManageContacts()
@@ -6276,6 +6290,7 @@
 				$videoid=$this->uri->segment(4);
 				
 				$result=$this->db->where(['id'=>$courseid])->get('tbl_course');
+                // print_r($result);die;
 				if($result->num_rows())
 				{
 					

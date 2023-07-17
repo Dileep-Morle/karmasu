@@ -638,8 +638,6 @@
 														<th>Tags</th>
 														<th>Timing</th>
 														<th>Duration</th>
-														<th>User ID of Live Session</th>
-														<th>Password of Live Session</th>
 														<th>Certification</th>
 														<th>Description</th>
 														<th>Link</th>
@@ -704,12 +702,6 @@
 															</td>
 															<td>
 																<?php echo $item->duration; ?>
-															</td>
-															<td>
-																<?php echo $item->userid; ?>
-															</td>
-															<td>
-																<?php echo $item->password; ?>
 															</td>
 															<td>
 																<?php echo $item->certification;?>
@@ -794,6 +786,23 @@
 										<?php echo form_error("author", "<p class='text-danger' >", "</p>"); ?>
 									</div>
 									<div class="form-group">
+										<label class="col-form-label">Course <span class="text-danger">*</span></label>
+										<select class="form-control" name="course" id="course" type="dropdown">
+											<option selected disabled>Select</option>
+											<?php foreach ($courselist as $item) { ?>
+												<option value="<?php echo $item->id;?>" ><?php echo $item->name;?></option>
+											<?php } ?>
+										</select>
+										<?php echo form_error("course", "<p class='text-danger' >", "</p>"); ?>
+									</div>
+									<div class="form-group">
+										<label  class="col-form-label">Session Type <span class="text-danger">*</span></label>
+										<select class="form-control" id="session_type" name="session_type" type="dropdown">
+										
+										</select>
+										<?php echo form_error("session_type","<p class='text-danger' >","</p>"); ?>
+                                    </div>
+									<!-- <div class="form-group">
 										<label  class="col-form-label">For User <span class="text-danger">*</span></label>
 										<select class="form-control" name="for_user" required onchange="getUsers(this.value)">
 											<option selected disabled>Select</option>
@@ -802,8 +811,8 @@
 											<option value="AllStudent">All Students</option>
 											<option value="Student">Select Students</option>
 										</select>
-										<?php echo form_error("for_user","<p class='text-danger' >","</p>"); ?>
-                                    </div>
+										<?php //echo form_error("for_user","<p class='text-danger' >","</p>"); ?>
+                                    </div> -->
 									<div class="form-group">
 										<label class="col-form-label">Subject <span class="text-danger">*</span></label>
 										<input type="text" class="form-control text-capitalize" name="subject" placeholder="Subject"
@@ -831,13 +840,13 @@
 										<input type="text" class="form-control text-uppercase" name="duration" placeholder="Duration" required>
 										<?php echo form_error("duration", "<p class='text-danger' >", "</p>"); ?>
 									</div>
-									<div class="form-group d-none">
+									<!-- <div class="form-group d-none">
 										<label class="col-form-label">Link <span class="text-danger">*</span></label>
 										<input type="text" class="form-control" name="link" placeholder="Link"
 										>
-										<?php echo form_error("link", "<p class='text-danger' >", "</p>"); ?>
-									</div>
-									<div class="form-group">
+										<?php //echo form_error("link", "<p class='text-danger' >", "</p>"); ?>
+									</div> -->
+									<!-- <div class="form-group">
                                     <label class="col-form-label">Parameter <span class="text-danger">*</span></label>
                                     <select  class="form-control" name="parameter" required onchange="getParameterData(this.value)">
                                         <option value="None" selected>None</option>
@@ -852,18 +861,18 @@
                                         <option value="External">External</option>
                                         
                                     </select>
-                                    <?php echo form_error("parameter", "<p class='text-danger' >", "</p>"); ?>
-                                   </div>
-									<div class="form-group d-none">
+                                    <?php // echo form_error("parameter", "<p class='text-danger' >", "</p>"); ?>
+                                   </div> -->
+									<!-- <div class="form-group d-none">
 										<label class="col-form-label">User ID of Live Session<span class="text-danger"></span></label>
 										<input type="text" class="form-control" name="userid" placeholder="User ID"  >
-										<?php echo form_error("userid", "<p class='text-danger' >", "</p>"); ?>
+										<?php //echo form_error("userid", "<p class='text-danger' >", "</p>"); ?>
 									</div>
 									<div class="form-group d-none">
 										<label class="col-form-label">Password of Live Session<span class="text-danger"></span></label>
 										<input type="text" class="form-control" name="password" placeholder="Password" >
-										<?php echo form_error("password", "<p class='text-danger' >", "</p>"); ?>
-									</div>
+										<?php //echo form_error("password", "<p class='text-danger' >", "</p>"); ?>
+									</div> -->
 									<div class="form-group">
 										<label  class="col-form-label">Is this Live Session includes certification ? <span class="text-danger">*</span></label>
 										<div class="icheck-material-success">
@@ -1021,51 +1030,52 @@
 			</div>
 			
 			<?php include("FooterLinking.php"); ?>
+			
 			<script>
 
-            function getParameterData(parameter)
-            {
-                // alert(parameter);
-                if(parameter=='External'){
-                    $(".parameter-data").html('<label class="col-form-label">External Link <span class="text-danger">*</span></label><input type="text" class="form-control" name="link" placeholder="Enter Link " required >');
-                    $('.parameter-data').show();
-                }
-                else if(parameter=='None'){
-                    $(".parameter-data").html('');
-                    $('.parameter-data').hide();
-                }
-                else{
-                    
-                    $.ajax({
-                        url: "<?php echo base_url("AdminPanel/Parameters/"); ?>"+parameter,
-                        type: "get",
-                        data: { },
-                        success: function(response) 
-                        {
-                            // alert(response);
-                            $(".parameter-data").html(response);
-                            $('.parameter-data').show(); 
-                        }
-                    });
-                }
-                
-            }
-            
-            function getUsers(type)
-            {
-                $.ajax({
-                    url: "<?php echo base_url("AdminPanel/GetUsers/"); ?>"+type,
-                    type: "get",
-                    data: { },
-                    success: function(response) 
-                    {
-                        // alert(response);
-                        $(".user-data").html(response);
-                        $('.user-data').show(); 
-                    }
-                });
-                
-            }
+				function getParameterData(parameter)
+				{
+					// alert(parameter);
+					if(parameter=='External'){
+						$(".parameter-data").html('<label class="col-form-label">External Link <span class="text-danger">*</span></label><input type="text" class="form-control" name="link" placeholder="Enter Link " required >');
+						$('.parameter-data').show();
+					}
+					else if(parameter=='None'){
+						$(".parameter-data").html('');
+						$('.parameter-data').hide();
+					}
+					else{
+						
+						$.ajax({
+							url: "<?php echo base_url("AdminPanel/Parameters/"); ?>"+parameter,
+							type: "get",
+							data: { },
+							success: function(response) 
+							{
+								// alert(response);
+								$(".parameter-data").html(response);
+								$('.parameter-data').show(); 
+							}
+						});
+					}
+					
+				}
+				
+				function getUsers(type)
+				{
+					$.ajax({
+						url: "<?php echo base_url("AdminPanel/GetUsers/"); ?>"+type,
+						type: "get",
+						data: { },
+						success: function(response) 
+						{
+							// alert(response);
+							$(".user-data").html(response);
+							$('.user-data').show(); 
+						}
+					});
+					
+				}
 				
 				function CertificateStatusLive(e,id) {
 					var status = 'true';
@@ -1144,6 +1154,36 @@
 					});
 				});
 				
+			</script>
+			<script>
+				$(document).ready(function() {
+					$('#course').change(function() {
+						var selectedOption = $(this).val(); // Get the selected option value from the first selector
+						
+						// Send AJAX request to fetch data
+						$.ajax({
+						url: '<?php echo site_url('AdminPanel/getDataByType'); ?>', // Replace 'controller_name' with your actual controller name
+						type: 'POST',
+						data: {option: selectedOption},
+						dataType: 'json',
+						success: function(response) {
+							var options = '';
+
+							// Generate HTML options for the second selector
+							$.each(response, function(ManageLiveVideo, value) {
+							options += '<option value="' + value.id + '">' + value.type + '</option>';
+							});
+
+							// Populate the second selector with options
+							$('#session_type').html(options);
+						},
+						error: function(xhr, status, error) {
+							// Handle AJAX error if needed
+							console.log(error);
+						}
+						});
+					});
+				});
 			</script>
 			<script>
 				$(document).ready(function(){
@@ -1354,4 +1394,5 @@
 		
 	</html>
 	<?php
-	}													
+	}	
+	?>												

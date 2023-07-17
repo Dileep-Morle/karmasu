@@ -219,6 +219,17 @@
                                                 <a href="../../../uploads/ebook/<?php echo $list[0]->logo; ?>" target="_blank"><?php echo $list[0]->logo; ?></a>
 											</div>
 										</div>
+
+                                        <div class="form-group row">
+                                            <label  class="col-sm-2 col-form-label">E-Book Link <span class="text-danger">*</span></label>
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control" name="link" title="Upload E-Book Logo" required value="<?php echo $list[0]->link;?>">
+                                                <?php echo form_error("link","<p class='text-danger' >","</p>"); ?>
+											</div>
+                                            <div class="col-sm-4">
+                                                <a href="<?php echo $list[0]->link; ?>" target="_blank"><?php echo $list[0]->link; ?></a>
+											</div>
+										</div>
                                         
                                         <div class="form-group row">
                                             <label  class="col-sm-2 col-form-label">E-Book Cover Page <span class="text-danger">*</span></label>
@@ -231,18 +242,18 @@
 											</div>
 										</div>
 										
-										<div class="form-group row">
+										<!-- <div class="form-group row">
                                             <label  class="col-sm-2 col-form-label">E-Book Sample Page <span class="text-danger">*</span></label>
                                             <div class="col-sm-6">
-                                                <input type="file" class="form-control" name="ebooksample" title="Upload E-Book Sample Page" accept="application/pdf">
-                                                <?php echo form_error("ebooksample","<p class='text-danger' >","</p>"); ?>
+                                                <input type="file" class="form-control" name="sample" title="Upload E-Book Sample Page" accept="application/pdf">
+                                                <?php //echo form_error("sample","<p class='text-danger' >","</p>"); ?>
 											</div>
                                             <div class="col-sm-4">
-                                                <a href="../../../uploads/ebook/<?php echo $list[0]->sample; ?>" target="_blank"><?php echo $list[0]->sample; ?></a>
+                                                <a href="../../../uploads/ebook/<?php //echo $list[0]->sample; ?>" target="_blank"><?php //echo $list[0]->sample; ?></a>
 											</div>
-										</div>
+										</div> -->
 										
-										<div class="form-group row d-none">
+										<div class="form-group row">
                                             <label  class="col-sm-2 col-form-label">E-Book PDF File<span class="text-danger">*</span></label>
                                             <div class="col-sm-6">
                                                 <input type="file" class="form-control" name="ebook" title="E-Book PDF File" accept="application/pdf">

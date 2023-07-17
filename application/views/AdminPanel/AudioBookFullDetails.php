@@ -83,10 +83,10 @@
                                         </div>
                                         
                                         <div class="col-sm-12">
-                                            <p><strong><i class="fa fa-user-circle text-primary"></i> <?php echo $author[0]->name; ?> </strong></p>
+                                            <p><strong><i class="fa fa-user-circle text-primary"></i> <?php if(isset($author) !=''){ echo $author[0]->name; }?> </strong></p>
                                         </div>
                                         <div class="col-sm-12">
-                                            <p><strong><i class="fa fa-list-alt text-primary"></i> <?php echo $category[0]->title; ?> </strong></p>
+                                            <p><strong><i class="fa fa-list-alt text-primary"></i> <?php if(isset($category) && isset($category->title)){ echo $category->title; } ?> </strong></p>
                                         </div>
                                         <div class="col-sm-12">
                                             <p><strong><i class="fa fa-clock-o text-primary"></i> <?php echo $list[0]->daystofinish; ?> Days To Finish</strong></p>
@@ -166,6 +166,7 @@
                                                             <th>Topic No</th>
                                                             <th>Topic Name </th>
                                                             <th>Topic</th>
+                                                            <th>Topic Link</th>
                                                             <th>Description</th>
                                                             <th>Date</th>
                                                             <th>Time</th>
@@ -204,6 +205,9 @@
                                                                         <audio controls>
                                                                             <source src="<?=$topic;?>">
                                                                         </audio>
+                                                                    </td>
+                                                                    <td>
+                                                                        <?php echo $item->topic_link; ?>
                                                                     </td>
                                                                     <td>
                                                                         <?php echo $item->description; ?>
@@ -344,7 +348,7 @@
                                                 <input type="text" class="form-control " name="name" placeholder="Topic Name" required>
                                                 <?php echo form_error("name", "<p class='text-danger' >", "</p>"); ?>
                                             </div>
-                                            <div class="form-group d-none">
+                                            <div class="form-group">
                                                 <label class="col-form-label">Topic Type <span class="text-danger">*</span></label>
                                                 <select class="form-control" name="type" required onchange="topicType(this.value)">
                                                     <option selected disabled>Select</option>
@@ -352,6 +356,11 @@
                                                     <option value="Internal" selected>Internal</option>
                                                 </select>
                                                 <?php echo form_error("type", "<p class='text-danger' >", "</p>"); ?>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-form-label">Topic Link <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control " name="topic_link" placeholder="Topic Link" required>
+                                                <?php echo form_error("topic_link", "<p class='text-danger' >", "</p>"); ?>
                                             </div>
                                             <div class="form-group">
                                                 <label class="col-form-label">Topic (Audio)<span class="text-danger">*</span></label>
